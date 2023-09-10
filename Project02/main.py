@@ -18,15 +18,16 @@ def get_datetime_from_str(date_str: str, time_str: str) -> datetime:
     return datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
 
 
-def no_other_meal_within_2hr(dt: datetime, idx: int):
-    return True
-
-
 def get_meal_data():
-    for idx, row in enumerate(cgm_arr):
+    res = []
+    next_meal_dt = None
+    for idx, row in enumerate(insulin_arr):
         if not np.isnan(row[2]):
             dt = get_datetime_from_str(row[0], row[1])
-
+            if next_meal_dt is None or next_meal_dt - timedelta(hours=2) >= dt:
+                res.append(dt)
+            next_meal_dt = dt
+    return res
 
 
 if __name__ == '__main__':
@@ -36,5 +37,4 @@ if __name__ == '__main__':
     insulin_raw_data = pandas.read_csv(INSULIN_FILENAME, usecols=INSULIN_COLUMNS)
     insulin_arr = np.array(insulin_raw_data)
 
-    print('cgm_arr: \n%s' % cgm_arr)
-    print('insulin_arr: \n%s' % insulin_arr)
+    meal_times = get_meal_data()
