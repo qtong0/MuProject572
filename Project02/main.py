@@ -20,7 +20,6 @@ def get_datetime_from_str(date_str: str, time_str: str) -> datetime:
 def get_meal_data():
     for rows in cgm_arr:
         dt = get_datetime_from_str(rows[0], rows[1])
-        
 
 
 if __name__ == '__main__':
