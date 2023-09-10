@@ -3,6 +3,7 @@ import numpy as np
 import pandas
 from datetime import datetime
 from datetime import time
+from datetime import timedelta
 
 CGM_FILENAME = 'CGMData.csv'
 CGM_COLUMNS = ['Date', 'Time', 'Sensor Glucose (mg/dL)']
@@ -17,9 +18,15 @@ def get_datetime_from_str(date_str: str, time_str: str) -> datetime:
     return datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
 
 
+def no_other_meal_within_2hr(dt: datetime, idx: int):
+    return True
+
+
 def get_meal_data():
-    for rows in cgm_arr:
-        dt = get_datetime_from_str(rows[0], rows[1])
+    for idx, row in enumerate(cgm_arr):
+        if not np.isnan(row[2]):
+            dt = get_datetime_from_str(row[0], row[1])
+
 
 
 if __name__ == '__main__':
