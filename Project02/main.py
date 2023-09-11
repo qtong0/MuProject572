@@ -27,7 +27,8 @@ def get_meal_times() -> dict:
     times = {}
     next_meal_dt = None
     for idx, row in enumerate(insulin_arr):
-        if not np.isnan(row[2]):
+        # Filtering out zero as well, not sure if it's correct.
+        if not np.isnan(row[2]) and int(row[2]) != 0:
             dt = get_datetime_from_str(row[0], row[1])
             d = get_date_from_str(row[0])
             if next_meal_dt is None or next_meal_dt - timedelta(hours=2) > dt:
@@ -49,6 +50,34 @@ def get_meal_data() -> dict:
 
 def get_nomeal_data():
     data = []
+    meal_times_list = []
+    for meal_time in meal_times.values():
+        meal_times_list.extend(meal_time)
+    sorted_meal_times = sorted(meal_times_list, reverse=True)
+    mt_idx = len(sorted_meal_times) - 1
+    cgm_idx = len(cgm_arr) - 1
+    meal_time = sorted_meal_times[-1]
+    next_meal_dt = sorted_meal_times[-2] if len(sorted_meal_times) > 1 else datetime.max
+
+    while cgm_idx >= 0:
+        row = cgm_arr[cgm_idx]
+        row_dt = get_datetime_from_str(str(row[0]), str(row[1]))
+        while next_meal_dt <= row_dt:
+            mt_idx -= 1
+            meal_time = sorted_meal_times[mt_idx] if mt_idx >= 0 else datetime.max
+            next_meal_dt = sorted_meal_times[mt_idx - 1] if mt_idx >= 1 else datetime.max
+        if meal_time + timedelta(hours=2) <= row_dt and cgm_idx >= 23:
+            next_row = cgm_arr[cgm_idx - 23]
+            next_dt = get_datetime_from_str(str(next_row[0]), str(next_row[1]))
+            if next_dt <= next_meal_dt:
+                # print('found here:      %s | %s' % (meal_time, row_dt))
+                data.append(list(cgm_arr[:, 2][cgm_idx - 23: cgm_idx+1]))
+                cgm_idx -= 24
+            else:
+                # print('not enough data: %s | %s' % (meal_time, row_dt))
+                cgm_idx -= 1
+        else:
+            cgm_idx -= 1
     return data
 
 
@@ -66,3 +95,6 @@ if __name__ == '__main__':
     # Filter out meal_time where there is less than 30 cgm data
     meal_data = {k: v for k, v in meal_data.items() if len(v) == 30}
     print('len(meal_data): %s' % len(meal_data))
+
+    nomeal_data = get_nomeal_data()
+    print('len(nomeal_data): %s' % len(nomeal_data))
