@@ -5,10 +5,10 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import date
 
-CGM_FILENAME = 'CGMData.csv'
+CGM_FILENAME = './CGMData.csv'
 CGM_COLUMNS = ['Date', 'Time', 'Sensor Glucose (mg/dL)']
 
-INSULIN_FILENAME = 'InsulinData.csv'
+INSULIN_FILENAME = './InsulinData.csv'
 INSULIN_COLUMNS = ['Date', 'Time', 'BWZ Carb Input (grams)']
 
 
